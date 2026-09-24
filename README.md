@@ -39,7 +39,7 @@ There are three kinds of repos, plus this folder. Separate repos give each one i
 | `suite` (this folder, `sbwp/suite`) | This README, the suite-wide `CLAUDE.md` | Not released |
 
 ### `platform`
-Everything apps share as code. Nothing in it is deployed. A release publishes new versions, and nothing changes anywhere until an app upgrades. That upgrade is an ordinary app PR, so a new platform version is always tested in an app's dev environment before prod. **This repo has no AWS credentials**, only an npm publish token.
+Everything apps share as code. Nothing in it is deployed. A release publishes new versions, and nothing changes anywhere until an app upgrades. That upgrade is an ordinary app PR, so a new platform version is always tested in an app's dev environment before prod. **This repo stores no secrets at all.** It has no AWS credentials and no npm token (see [Release flows](#release-flows)).
 
 - **npm packages**, published publicly to **npmjs.com** under the `@sbwp` scope (`@sbwp/runtime`, `@sbwp/build`, `@sbwp/web`), with no token needed to install them. The repo is a pnpm workspace with three packages. They're kept separate so, for example, Lambda bundles never include React and the esbuild tooling never ships at runtime.
     - **`runtime`**: the backend library. It wraps handlers, parses and validates requests, builds the `User`, and provides `db`, `secrets`, and `log` without app code knowing it runs on AWS.
@@ -325,6 +325,13 @@ GitHub's deployment history shows every prod deploy with its commit, approver, t
 **`platform`** is released with **release-please**, as are any future libraries:
 - It keeps a release PR open that updates every `package.json` version, `CHANGELOG.md`, and `.release-please-manifest.json`. Versions are never edited by hand.
 - Merging that PR tags the release, creates a GitHub Release, and publishes to npm.
+- **Publishing uses npm trusted publishing:**
+    - Each `@sbwp` package names `sbwp/platform`'s release workflow as its trusted publisher.
+    - The workflow authenticates with GitHub's short-lived OIDC token, so no npm token is stored anywhere.
+    - Every version gets a provenance attestation showing it was built from that repo.
+    - The first version of each package is published manually by me, since trusted publishing can only be configured once a package exists.
+    - Packages set `publishConfig.access: "public"`, because scoped packages are private by default.
+- The `@sbwp` scope belongs to the `sbwp` npm organization. My npm account must have two-factor authentication enabled.
 - The version bump is the highest one among unreleased commits. For example, a breaking change plus a fix since `1.4.2` produces `2.0.0`.
 - While the version is 0.x, breaking changes bump only the minor version.
 
@@ -421,7 +428,8 @@ Improvements arrive with platform upgrades.
 | Repo layout | Platform + infra + one repo per app | A monorepo for the whole suite: tangled commit history. Four repos per app: no home for shared pieces. |
 | Lambda layout | One Lambda per route, from a manifest | One Lambda per app: simpler, but per-route functions give smaller bundles and per-endpoint deploys. Routes listed in Terraform: duplicated definitions. |
 | Platform versioning | One shared version | Separate versions: could pin incompatible `build` and module versions. |
-| Library registry | npmjs.com | GitHub Packages: requires a token even to install public packages. |
+| Library registry | npmjs.com (`@sbwp` org) | GitHub Packages: requires a token even to install public packages. |
+| npm publishing | Trusted publishing (GitHub OIDC) | A stored npm token: a long-lived secret in a public repo's CI, with no provenance. |
 | App versioning | Date tags + generated notes | Semantic versions: nothing depends on apps, so the numbers would mean nothing, and releases would need an extra step. |
 | Prod promotion | GitHub environment approval | A manual release workflow: works, but is less direct. |
 | Branch merging | Squash + Conventional Commit titles | Merge or rebase: every commit would have to follow the convention. |
