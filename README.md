@@ -301,7 +301,8 @@ Adding an app never touches the main zone. Everything else lives in each environ
 
 ### Branching and PRs
 - Feature branches are named `description-of-feature` (kebab-case). They're squash-merged into main via PR and then deleted.
-- Branch protection on main requires a PR, passing checks, and squash merges.
+- Branch protection on main requires a PR, passing checks, and squash merges. It doesn't require approvals: Claude opens PRs under my GitHub account, and GitHub never lets an author approve their own PR.
+- **Claude's changes always go through a PR.** I review the diff, squash-merge it myself, and then tell Claude it's merged. Claude never merges its own PRs.
 - **PR titles follow Conventional Commits** (`feat: add RSVP form`, `fix: rounding in totals`, `feat!: …` for breaking changes), enforced by a CI check. With squash merges, the title becomes the commit on main, so branch commits can be messy. Versions and changelogs are generated from these titles.
 
 ### PR checks
