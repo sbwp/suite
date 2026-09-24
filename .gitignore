@@ -1,0 +1,12 @@
+# Child repos (each is its own git repo)
+/platform/
+/platform-infra/
+/budget/
+/events/
+/admin/
+
+# Local-only folders
+/memory/
+/local-resources/
+
+.DS_Store
