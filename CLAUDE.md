@@ -20,6 +20,11 @@ New undecided questions go in the README's Open questions section. Once a questi
 ## Session notes
 At the start of a session, read `memory/<repo>.md` for the repo being worked on, or `memory/suite.md` for suite-level planning, if the file exists. Before stopping, update it with what's in progress, what's next, and any open threads. These are handoff notes, not a decision log: decisions go in the README or a repo's docs. `memory/` and `local-resources/` are not tracked in git, because the repos are public.
 
+## Git workflow
+- Every change goes on a `description-of-feature` branch with one or more commits, pushed and opened as a PR (`gh pr create`) with a Conventional Commit title. The body ends with the Claude Code attribution line.
+- **Never merge PRs, and never push to `main`.** The user reviews and squash-merges, then says so. After that, switch the local repo back to `main`, pull, and delete the local branch.
+- PRs are authored under the user's account, so the user can't formally approve them. Don't suggest requiring approvals in branch protection.
+
 ## Rules that span repos
 - **Cost:** aim for $0 on free tiers until an app has a public audience. Flag anything that costs money (e.g. Secrets Manager, NAT gateways, paid Atlas tiers) before introducing it.
 - **Boundaries:** apps never read another app's database, only its API. Handlers never touch raw Lambda events or AWS SDKs directly; they go through the `runtime` library and `ctx`. The `platform` repo never gets AWS credentials.
